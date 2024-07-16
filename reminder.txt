@@ -1,0 +1,325 @@
+on lesson 40 i  have changed the code django orm first for plaeing with data as likee mosh 
+
+willl continue afterward 
+\confilct coming during the  stire tables duew to seedsql file 
+
+
+only , defer  >>
+
+select_related  >> when have on;y single relation foreign key    prefetch-related  >>  geneericForeignkry >>> when having multiple relation
+we can use both of them in single line 
+
+get the last 5 orders with thier customers and items (incl product )
+Order.objects.select_related('customer').order_by('-placed_at')[:5]
+
+
+
+  # query_set =Order.objects.select_related('customer').prefetch_related('orderitem_set__product').order_by('-placed_at')[:5]
+
+
+  lesson 51 aggregation
+
+  result = Product.objects.aggregate(avg_price=Avg('unit_price'))
+print(result['avg_price'])  # Print the average unit price
+result = Product.objects.aggregate(max_quantity=Max('quantity'))
+print(result['max_quantity'])  # Print the maximum quantity available
+
+
+result = Product.objects.aggregate(total_categories=Count('category', distinct=True))
+print(result['total_categories'])  # Print the total count of distinct categories
+
+result = Product.objects.aggregate(total_price=Sum('unit_price'), avg_price=Avg('unit_price'))
+print(result['total_price'])  # Print tahe total sum of unit prices
+print(result['avg_price'])  # Print the average unit price
+
+
+lesson 52
+
+anottating in django or as >>  in database  oibjects 
+adding or assignoig the new attributes to the table like ramzan bonus to emloyes so directy inser query using anootate 
+
+
+lesson 53
+
+grouping data
+from django.db.models import VALUE,F,Func ,Count
+
+query_set = Customer.objects.annotate(orders_count =Count('order))
+this  will create a new objecet leftouter joins create bec not eveyr cusotmer has orders 
+
+
+lessogn 54 
+working with expression wrappers  
+for complex queryies like discounted_price unit_price * 0.8
+
+query_set =Product.objects.annotate(
+    discounted_price = ExpressionWrapper(F('unit_price) *  0.8  output_field = DecimalField() 
+))
+
+lesson 55
+
+def say_hello(request):
+     discounted_price = ExpressionWrapper(F('unit_price') * 0.8 , output_field=DecimalField())
+
+
+
+     query_Set = Product.objects.annotate(
+        discounted_price = discounted_price
+     )
+     
+    
+  
+     return render (request,"hello.html",{'name':"taha",})
+
+     
+lesson 56
+
+query generic relation ship 
+taking tag and taggeditem >>> in taht content type filed we have create
+decouple the app from store app thats why we used content types 
+measn this not know we have model product 
+
+
+
+lesson 57
+custom managers
+
+content objects   
+lesson 59
+creating objects
+
+creating and inserting data in objects
+
+collection = Collection()
+     collection.title = 'Video Games'
+     collection.featured_product = Product(pk=1)
+     collection.save()
+     # TaggedItems.objects.get_tags_for(Product, 1)
+      #either day to read id of collection
+      but theri suggedstion
+
+
+     
+     collection =  Collection.objects.create(name="a", featured_product_id = 1)
+      or that ways  to read is collection  >> 
+      theri is not suggedstion  due to key word  arguments
+      if we rename the fieled its not updated 
+
+
+Lesson 60 >>
+updating objects 
+
+collection = Collection.objects.get(pk=11)
+     
+     collection.featured_product = None
+     collection.save()
+this will update but their is no field assig data to title aattribur so in django orm concept 
+it will  write  sql code and assign  empty string to title
+
+collection = Collection.objects.update(featured_product = None) this updage all feature products to none 
+
+ so its better to  filter which objedt you should  have to update 
+
+collection = Collection.objects.filter(pk=11).update(featured_product = None) this updage all feature products to none 
+
+
+lessoon 61
+
+deleting objects
+
+we have two optins delete single aur multiple 
+
+collection = Collection(pk=11)
+collection.delete()
+
+Collection.objects.filter(id__gt = 5).delete()
+
+pracrice some exercise  for better handsonexperience
+
+lesson 62
+TRANSACTION CONCEPT DTAABASE 
+
+ order = Order()
+   order.customer_id = 1
+   order.save()
+   if this runs 
+
+   item = OrderItem()
+   item.order = order
+   item.product_id = 1
+   item.quantity = 1
+   item.unit_price = 10
+   item.save()
+   and taht faisl django  will grant the permission to roll back 
+   as like the concept in transaction so we use the transaction wrapper  to contro, over that situation 
+
+
+
+runnabel code 
+from django.shortcuts import render
+from django.http import HttpResponse
+from django.db.models.aggregates import Min, Max, Count, Sum, Avg
+from django.db.models import Q, F, ExpressionWrapper, DecimalField
+from store.models import Product, Customer, Collection, Order, OrderItem
+from tags.models import TaggedItems
+from django.db import transaction
+from django.contrib.contenttypes.models import ContentType
+
+def say_hello(request):
+   # ....
+   with transaction.atomic():
+     order = Order()
+     order.customer_id = 1
+     order.save()
+
+     item = OrderItem()
+     item.order = order
+     item.product_id = -1
+     item.quantity = 1
+     item.unit_price = 10
+     item.save()
+
+   return render(request, "hello.html", {'name': "taha"})
+
+
+from that no any change to databse dure transactionwrappepr 
+
+lesson 63 
+
+executing raw sql queries 
+
+query_set = Product.objects.raw(SELECT * FROM store_product)
+if something complex django is not providing output sql aueried according to you
+so than we have to move to raw sql queries other wise sjango all handle that 
+
+cursor = connection.cursor()
+cursor.execute('')
+cursor.close()
+
+with connection.cursor() as cursor 
+cursor.execute()
+another mehrord stored procedures
+
+cursor.callproc('get_customers',[1,2,'a'])
+
+
+now new section 
+
+                        DJANGO ADMIN
+
+ 
+CUSTOMIZING THE AMDIN INTERFACE
+ADDING COMPUTED COLUMNS 
+LOADING RELATED PROJECTS
+ADDING SEARCH AND FILTER 
+IMPLEMENTING CUSTOMER ACTIONS 
+ADDING DATA VALIDATION 
+
+
+lesson 65  
+creatinng superuser account ofnadmin 
+
+python manage.py createsuperuser 
+
+
+got storefront urls.py >> change that name 
+
+admin.site.site_header = 'Storefront Admin'   >>  this change the admin panel header name 
+
+lesson 66
+
+registering models in admin panel
+
+from django.contrib import admin
+from . import models
+# Register your models here.
+
+admin.site.register(models.Collection)
+
+
+def __str__(self) -> str:
+        return self.title
+
+class Meta:
+  oredring =[title]
+
+
+using magic stirng to show the collectiontitle instead of object 
+
+
+lesson 67
+cuustomizing the list page 
+
+class ProductAdmin(admin.ModelAdmin):
+  list_display = ['title','unit_price']
+
+
+we can also use register decorator 
+
+@admin.register(models.Product)
+
+list_display >>> these are options
+so search djangomodel option to work on more options 
+
+
+@admin.register(models.Product)
+
+class ProductAdmin(admin.ModelAdmin):
+    list_display =['title','unit_price']
+    list_editable =['unit_price']
+    list_per_page = 10 
+
+@admin.register(models.Customer)
+
+class CustomerAdmin(admin.ModelAdmin):
+    list_display =['first_name','last_name','membership']
+    list_editable =['membership']
+    ordering =['first_name','last_name']
+    list_per_page = 10 
+admin.site.register(models.Collection)
+
+
+lesson 68 
+
+
+adding computed columns 
+managing invernstory  sttus 
+
+lessogn 69
+selecting related objects 
+@admin.register(models.Order)
+class OrderAdmin(admin.ModelAdmin):
+    list_display =['id','placed_at','payment_status','customer']
+    list_editable =['payment_status']
+
+    # def customer_first_name(self,order):
+    #     return order.customer.first_name  instead of using thse crete a msgic struing inthat particulr model 
+
+
+lesson 70 
+overriding the base query set 
+
+lesson 71
+
+providing links to other pages 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+S
